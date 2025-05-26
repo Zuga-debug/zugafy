@@ -6,7 +6,12 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Http\\Controllers\\Api\\MovieController' => $baseDir . '/app/Http/Controllers/Api/MovieController.php',
+    'App\\Http\\Controllers\\Api\\WatchlistController' => $baseDir . '/app/Http/Controllers/Api/WatchlistController.php',
+    'App\\Movie' => $baseDir . '/app/Movie.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
+    'App\\Providers\\RouteServiceProvider' => $baseDir . '/app/Providers/RouteServiceProvider.php',
+    'App\\Watchlist' => $baseDir . '/app/Watchlist.php',
     'Attribute' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
     'Brick\\Math\\BigDecimal' => $vendorDir . '/brick/math/src/BigDecimal.php',
     'Brick\\Math\\BigInteger' => $vendorDir . '/brick/math/src/BigInteger.php',

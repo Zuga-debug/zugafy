@@ -1,16 +1,15 @@
 <template>
-    <div>
-      <nav>
-        <router-link to="/">Home</router-link>
-        <router-link to="/watchlist">Watchlist</router-link>
-        <router-link to="/search">🔍 Search</router-link>
-      </nav>
-      <div class="page">
-        <router-view />
-      </div>
-    </div>
-  </template>
   
-  <script setup>
-  </script>
-  
+  <div id="app">
+    
+    <!-- <Navbar /> -->
+    <router-view />
+    <!-- <Footer />contrco -->
+  </div>
+</template>
+
+<script setup>
+
+// import Navbar from './components/Navbar.vue'
+// import Footer from './components/Footer.vue'
+</script>

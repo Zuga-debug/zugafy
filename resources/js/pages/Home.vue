@@ -1,168 +1,90 @@
-<!-- <template>
-  <div class="page p-8">
-    <div class="flex gap-4 mb-6">
-      <button
-        @click="activeTab = 'trending'"
-        :class="[
-          'trending_tab px-4 py-2 rounded',
-          activeTab === 'trending' ? 'bg-blue-600 text-white' : 'bg-gray-200'
-        ]"
-      >
-        🎬 Trending
-      </button>
-
-      <button
-        @click="activeTab = 'topRated'"
-        :class="[
-          'px-4 py-2 rounded',
-          activeTab === 'topRated' ? 'bg-blue-600 text-white' : 'bg-gray-200'
-        ]"
-      >
-        ⭐ Top Rated
-      </button>
+<template>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="mb-0">Discover Movies</h2>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary" :class="{ active: currentTab === 'trending' }" @click="currentTab = 'trending'">Trending</button>
+        <button type="button" class="btn btn-outline-primary" :class="{ active: currentTab === 'topRated' }" @click="currentTab = 'topRated'">Top Rated</button>
+      </div>
     </div>
 
-    <Spinner v-if="loading" />
-    <div class="movies-grid" v-else>
-      <div
-        v-for="movie in activeTab === 'trending' ? movies : topRated"
-        :key="movie.id"
-        class="movie-card"
-      >
-        <router-link :to="`/movie/${movie.id}`">
-          <img :src="getImageUrl(movie.poster_path)" alt="Movie Poster" />
-        </router-link>
-        <h2 class="mt-2 font-medium">{{ movie.title }}</h2>
-        <button @click="addToWatchlist(movie)">➕ Add to Watchlist</button>
+  <div class="col-md-3 mb-4" v-for="movie in movies" :key="movie.id">
+  <div class="card h-100">
+    <img :src="'https://image.tmdb.org/t/p/w500' + movie.poster_path" class="card-img-top" :alt="movie.title" />
+    <div class="card-body">
+      <h5 class="card-title">{{ movie.title }}</h5>
+      <button class="btn btn-sm btn-outline-primary w-100 mt-2" @click="openTrailer(movie.id)">Play Trailer</button>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Trailer Modal Stub -->
+    <div class="modal fade" id="trailerModal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="trailerModalLabel">Trailer</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <iframe
+              v-if="trailerKey"
+              width="100%"
+              height="400"
+              :src="`https://www.youtube.com/embed/${trailerKey}`"
+              frameborder="0"
+              allowfullscreen
+            ></iframe>
+            <p v-else>No trailer available.</p>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
 </template>
-<script setup>
-import { ref, onMounted } from 'vue';
-// import spinner from './spinner.vue';
 
-const loading = ref(true);
-// const loadingTopRated = ref(true);
+<script setup>import { ref, onMounted, watch } from 'vue';
+
+const currentTab = ref('trending');
 const movies = ref([]);
-const topRated = ref([]);
-const activeTab = ref('trending');
+const selectedMovie = ref(null);
+const trailerKey = ref('');
 
 const fetchMovies = async () => {
+  const endpoint =
+    currentTab.value === 'trending'
+      ? 'https://api.themoviedb.org/3/trending/movie/week'
+      : 'https://api.themoviedb.org/3/movie/top_rated';
+
   try {
-    const res1 = await fetch(
-      `https://api.themoviedb.org/3/trending/movie/week?api_key=${import.meta.env.VITE_TMDB_API_KEY}`
-    );
-    const trendingData = await res1.json();
-    movies.value = trendingData.results;
-
-    const res2 = await fetch(
-      `https://api.themoviedb.org/3/movie/top_rated?api_key=${import.meta.env.VITE_TMDB_API_KEY}`
-    );
-    const topRatedData = await res2.json();
-    topRated.value = topRatedData.results;
+    const res = await fetch(`${endpoint}?api_key=${import.meta.env.VITE_TMDB_API_KEY}`);
+    const data = await res.json();
+    movies.value = data.results.slice(0, 8); // Limit to 8
   } catch (err) {
-    console.error('Fetch error:', err);
-  } finally {
-    loading.value = false;
+    console.error('Error fetching movies:', err);
   }
 };
 
-const getImageUrl = (path) => `https://image.tmdb.org/t/p/w500${path}`;
+const openTrailer = async (movieId) => {
+  selectedMovie.value = movieId;
+  trailerKey.value = '';
 
-const addToWatchlist = (movie) => {
-  let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
-  if (!watchlist.some(m => m.id === movie.id)) {
-    watchlist.push(movie);
-    localStorage.setItem('watchlist', JSON.stringify(watchlist));
-    alert('✅ Movie added to Watchlist!');
-  } else {
-    alert('⚡ Already in Watchlist');
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${import.meta.env.VITE_TMDB_API_KEY}`);
+    const data = await res.json();
+    const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+    trailerKey.value = trailer ? trailer.key : null;
+  } catch (err) {
+    console.error('Error fetching trailer:', err);
   }
+
+  const modal = new bootstrap.Modal(document.getElementById('trailerModal'));
+  modal.show();
 };
 
-onMounted(() => {
-  fetchMovies();
-  
-});
-</script>
-
-<style scoped>
-.movies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.movie-card {
-  background: white;
-  border: 1px solid #ddd;
-  padding: 12px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.movie-card img {
-  width: 100%;
-  border-radius: 6px;
-}
-
-.movie-card h2 {
-  font-size: 16px;
-  margin-top: 10px;
-}
-
-button {
-  margin-top: 10px;
-  background: #3490dc;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover {
-  background: #2779bd;
-}
-.trending_tab{
-  margin-right: 30px;
-}
-</style> -->
-
-<template>
-  <div>
-    <div class="tabs">
-      <button @click="currentTab = trendingTab">🔥 Trending</button>
-      <button @click="currentTab = TopRatedTab">⭐ Top Rated</button>
-    </div>
-
-    <transition name="fade" mode="out-in">
-      <keep-alive>
-        <component :is="currentTab" />
-      </keep-alive>
-    </transition>
-  </div>
-</template>
-
-<script setup>
-import { shallowRef } from 'vue';
-import TrendingTab from '../components/trendingTab.vue';
-import TopRatedTab from '../components/TopRatedTab.vue';
-
-const currentTab = shallowRef(TrendingTab); // ✅ safe reference to component
+watch(currentTab, fetchMovies);
+onMounted(fetchMovies);
 
 </script>
-<style>
-.tabs button {
-  margin-right: 1rem;
-  padding: 0.5rem 1rem;
-}
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-</style>
