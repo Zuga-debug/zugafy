@@ -1,22 +1,19 @@
 <?php
 
-
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User; // ✅ This line fixes your error
 
 class Watchlist extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'movie_id',
-        'title',
-        'poster_path',
-        'release_date',
-    ];
-}
+    protected $fillable = ['user_id', 'movie_id', 'title', 'poster_path'];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}

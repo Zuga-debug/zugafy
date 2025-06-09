@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zugafy</title>
+    <link rel="shortcut icon" href="zugafy_logo.webp" type="image/x-icon">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

@@ -6,19 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-   public function up()
-{
-    Schema::create('watchlists', function (Blueprint $table) {
-        $table->id();
-        $table->integer('tmdb_id')->unique();
-        $table->string('title');
-        $table->string('poster_path')->nullable();
-        $table->timestamps();
-    });
-}
+
+    public function up()
+    {
+        Schema::create('watchlists', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('movie_id');
+            $table->string('title');
+            $table->string('poster_path')->nullable();
+            $table->timestamps();
+
+            $table->unique(['user_id', 'movie_id']);
+        });
+    }
+
+
 
 
     /**
